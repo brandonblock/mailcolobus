@@ -1,5 +1,7 @@
 //! tests/health_check.rs
+use mailcolobus::configuration::get_configuration;
 use mailcolobus::startup::run;
+use sqlx::{Connection, PgConnection};
 use std::net::TcpListener;
 
 #[actix_web::test]
@@ -37,6 +39,11 @@ async fn spawn_app() -> String {
 async fn subscribe_returns_a_200_for_valid_form_data() {
     // Arrange
     let app_address = spawn_app().await;
+    let configuration = get_configuration().expect("Failed to read configuration");
+    let connection_string = configuration.database.connection_string();
+    let _connection = PgConnection::connect(&connection_string)
+        .await
+        .expect("Failed to connect to Postgres");
     let client = reqwest::Client::new();
 
     // Act
