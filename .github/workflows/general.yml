@@ -4,15 +4,6 @@ on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
-
-jobs:# The name of your workflow. GitHub displays the names of your workflows on your repository's "Actions" tab
-name: Rust
-
-# To automatically trigger the workflow
-on: [push, pull_request]
-
-env:
-  CARGO_TERM_COLOR: always
   SQLX_VERSION: 0.6.2
   SQLX_FEATURES: "rustls,postgres"
 
