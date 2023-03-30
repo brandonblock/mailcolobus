@@ -1,4 +1,5 @@
 //! tests/health_check.rs
+use mailcolobus::startup::run;
 use std::net::TcpListener;
 
 #[actix_web::test]
@@ -24,7 +25,7 @@ async fn health_check_works() {
 async fn spawn_app() -> String {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind ranom port");
     let port = listener.local_addr().unwrap().port();
-    let server = zero2prod::run(listener).expect("Failed to bind address");
+    let server = run(listener).expect("Failed to bind address");
 
     // using non-binding let on the future to allow the test to exit
     let _ = actix_web::rt::spawn(server);
