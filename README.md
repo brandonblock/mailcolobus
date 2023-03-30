@@ -1,0 +1,2 @@
+Email newsletter service based on the project from [Zero To Production With Rust](https://www.zero2prod.com/).
+The intent is to use this project as a framework to gain experience with Rust and Actix. It differs from the book's project chiefly by using the most recent versions of all tools and any other changes I see fit to implement.
