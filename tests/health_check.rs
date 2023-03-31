@@ -16,6 +16,8 @@ async fn spawn_app() -> TestApp {
     let address = format!("http://127.0.0.1:{}", port);
 
     let mut configuration = get_configuration().expect("Failed to read configuration");
+
+    // Create testing db name
     configuration.database.database_name = Uuid::new_v4().to_string();
     let connection = configure_database(&configuration.database).await;
 
