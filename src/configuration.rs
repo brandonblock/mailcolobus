@@ -5,7 +5,7 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
-    pub application_port: u16,
+    pub application: ApplicationSettings,
 }
 
 #[derive(Deserialize)]
@@ -16,6 +16,13 @@ pub struct DatabaseSettings {
     pub host: String,
     pub database_name: String,
 }
+
+#[derive(Deserialize)]
+pub struct ApplicationSettings {
+    pub port: u16,
+    pub host: String,
+}
+
 pub fn get_configuration() -> Result<Settings, ConfigError> {
     // Initialize our config reader
     let settings = Config::builder()
