@@ -1,6 +1,8 @@
 //! tests/health_check.rs
 use mailcolobus::configuration::{get_configuration, DatabaseSettings};
 use mailcolobus::startup::run;
+use mailcolobus::telemetry::{get_subscriber, init_subscriber};
+use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
@@ -10,7 +12,13 @@ pub struct TestApp {
     pub db_pool: PgPool,
 }
 
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let subscriber = get_subscriber("test".into(), "debug".into());
+    init_subscriber(subscriber);
+});
+
 async fn spawn_app() -> TestApp {
+    Lazy::force(&TRACING);
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
