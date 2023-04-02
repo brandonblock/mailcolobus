@@ -5,6 +5,7 @@ use mailcolobus::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
 use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
+use std::mem::drop;
 use std::net::TcpListener;
 use uuid::Uuid;
 
@@ -40,8 +41,8 @@ async fn spawn_app() -> TestApp {
 
     let server = run(listener, connection.clone()).expect("Failed to bind address");
 
-    // using non-binding let on the future to allow the test to exit
-    let _ = actix_web::rt::spawn(server);
+    // dropping the await so the tests will exit
+    drop(actix_web::rt::spawn(server));
 
     TestApp {
         address,
