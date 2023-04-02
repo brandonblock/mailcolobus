@@ -1,14 +1,16 @@
-use env_logger::Env;
 use mailcolobus::configuration::get_configuration;
 use mailcolobus::startup::run;
+use mailcolobus::telemetry::{get_subscriber, init_subscriber};
 use sqlx::PgPool;
 use std::net::TcpListener;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    // initiliaze log subscriber for telemetry
+    let subscriber = get_subscriber("mailcolubus".into(), "info".into());
+    init_subscriber(subscriber);
     // Panic if we can't get our configs
-    let configuration = get_configuration().expect("Failed to read configuration");
+    let configuration = get_configuration().expect("failed to read configuration");
     let address = format!("127.0.0.1:{}", configuration.application_port);
     let connection = PgPool::connect(&configuration.database.connection_string())
         .await
@@ -17,6 +19,6 @@ async fn main() -> std::io::Result<()> {
     // Start listener
     let listener = TcpListener::bind(address)?;
     let port = listener.local_addr().unwrap().port();
-    log::info!("Starting on port {}", port);
+    tracing::info!("Starting on port {}", port);
     run(listener, connection)?.await
 }
