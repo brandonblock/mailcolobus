@@ -3,6 +3,7 @@ use mailcolobus::configuration::{get_configuration, DatabaseSettings};
 use mailcolobus::startup::run;
 use mailcolobus::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
+use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
@@ -13,8 +14,16 @@ pub struct TestApp {
 }
 
 static TRACING: Lazy<()> = Lazy::new(|| {
-    let subscriber = get_subscriber("test".into(), "debug".into());
-    init_subscriber(subscriber);
+    let default_filter_level = "info".to_string();
+    let subscriber_name = "test".to_string();
+
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::stdout);
+        init_subscriber(subscriber);
+    } else {
+        let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::sink);
+        init_subscriber(subscriber);
+    }
 });
 
 async fn spawn_app() -> TestApp {
@@ -42,9 +51,10 @@ async fn spawn_app() -> TestApp {
 
 pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
     //Create database
-    let mut connection = PgConnection::connect(&config.connection_string_withoud_db())
-        .await
-        .expect("Failed to create database");
+    let mut connection =
+        PgConnection::connect(config.connection_string_withoud_db().expose_secret())
+            .await
+            .expect("Failed to create database");
 
     connection
         .execute(&*format!(r#"CREATE DATABASE "{}";"#, config.database_name))
@@ -52,7 +62,7 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .expect("failed to create database");
 
     //Migrate database
-    let connection_pool = PgPool::connect(&config.connection_string())
+    let connection_pool = PgPool::connect(config.connection_string().expose_secret())
         .await
         .expect("Failed to connect to Postgres");
     sqlx::migrate!("./migrations")
