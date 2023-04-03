@@ -1,8 +1,7 @@
 use mailcolobus::configuration::get_configuration;
 use mailcolobus::startup::run;
 use mailcolobus::telemetry::{get_subscriber, init_subscriber};
-use secrecy::ExposeSecret;
-use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 use std::net::TcpListener;
 
 #[actix_web::main]
@@ -12,10 +11,13 @@ async fn main() -> std::io::Result<()> {
     init_subscriber(subscriber);
     // Panic if we can't get our configs
     let configuration = get_configuration().expect("failed to read configuration");
-    let address = format!("127.0.0.1:{}", configuration.application_port);
-    let connection = PgPool::connect(configuration.database.connection_string().expose_secret())
-        .await
-        .expect("Failec to connect to Postgres");
+    let address = format!(
+        "{}:{}",
+        configuration.application.host, configuration.application.port
+    );
+    let connection = PgPoolOptions::new()
+        .acquire_timeout(std::time::Duration::from_secs(2))
+        .connect_lazy_with(configuration.database.with_db());
 
     // Start listener
     let listener = TcpListener::bind(address)?;
