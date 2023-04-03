@@ -37,6 +37,3 @@ databases:
     num_nodes: 1
     size: db-s-dev-database
     version: "12"
-
-
-curl --request POST --data 'name=le%20guin&email=ursula_le_guin%40gmail.com' https://mailcolobus-cx2wn.ondigitalocean.app/subscriptions --verbose
