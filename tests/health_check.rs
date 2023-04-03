@@ -3,7 +3,6 @@ use mailcolobus::configuration::{get_configuration, DatabaseSettings};
 use mailcolobus::startup::run;
 use mailcolobus::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
-use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::mem::drop;
 use std::net::TcpListener;
@@ -52,10 +51,9 @@ async fn spawn_app() -> TestApp {
 
 pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
     //Create database
-    let mut connection =
-        PgConnection::connect(config.connection_string_withoud_db().expose_secret())
-            .await
-            .expect("Failed to create database");
+    let mut connection = PgConnection::connect_with(&config.without_db())
+        .await
+        .expect("Failed to create database");
 
     connection
         .execute(&*format!(r#"CREATE DATABASE "{}";"#, config.database_name))
@@ -63,7 +61,7 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .expect("failed to create database");
 
     //Migrate database
-    let connection_pool = PgPool::connect(config.connection_string().expose_secret())
+    let connection_pool = PgPool::connect_with(config.without_db())
         .await
         .expect("Failed to connect to Postgres");
     sqlx::migrate!("./migrations")
