@@ -5,7 +5,7 @@ services:
     dockerfile_path: Dockerfile
     source_dir: .
     github:
-      branch: deployment
+      branch: main
       deploy_on_push: true
       repo: brandonblock/mailcolobus
     health_check:
@@ -37,3 +37,6 @@ databases:
     num_nodes: 1
     size: db-s-dev-database
     version: "12"
+
+
+curl --request POST --data 'name=le%20guin&email=ursula_le_guin%40gmail.com' https://mailcolobus-cx2wn.ondigitalocean.app/subscriptions --verbose
