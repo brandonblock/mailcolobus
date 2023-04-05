@@ -1129,6 +1129,7 @@ dependencies = [
  "config",
  "log",
  "once_cell",
+ "rand",
  "reqwest",
  "secrecy",
  "serde",
@@ -1139,6 +1140,7 @@ dependencies = [
  "tracing-bunyan-formatter",
  "tracing-log",
  "tracing-subscriber",
+ "unicode-segmentation",
  "uuid",
 ]
 

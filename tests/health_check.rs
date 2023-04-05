@@ -3,6 +3,7 @@ use mailcolobus::configuration::{get_configuration, DatabaseSettings};
 use mailcolobus::startup::run;
 use mailcolobus::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
+use rand::random;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::mem::drop;
 use std::net::TcpListener;
@@ -96,9 +97,10 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     // Arrange
     let test_app = spawn_app().await;
     let client = reqwest::Client::new();
+    let tuple = random::<(f64, char)>();
 
     // Act
-    let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
+    let body = format!("name=le%20guin&email=ursula_le_guin{:?}%40gmail.com", tuple);
     let respone = client
         .post(&format!("{}/subscriptions", &test_app.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -145,6 +147,37 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
             response.status().as_u16(),
             "The API did not fail with 400 bad request when the payload was {}.",
             error_message
+        );
+    }
+}
+
+#[actix_web::test]
+async fn subscribe_returns_a_400_when_fields_are_present_but_empty() {
+    // arrange
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+    let test_cases = vec![
+        ("name=&email=ursula_le_guin%40gmail.com", "empty name"),
+        // ("name=Ursula&email=", "empty email"),
+        // ("name=Ursula&email=definitely-not-an-email", "invalid email"),
+    ];
+
+    for (body, description) in test_cases {
+        //act
+        let response = client
+            .post(&format!("{}/subscriptions", &app.address))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(body)
+            .send()
+            .await
+            .expect("failed to execute request");
+
+        //assert
+        assert_eq!(
+            400,
+            response.status().as_u16(),
+            "the API did not return a 400 when the payload was {}",
+            description,
         );
     }
 }
