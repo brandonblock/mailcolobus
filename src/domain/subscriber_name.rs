@@ -5,7 +5,7 @@ pub struct SubscriberName(String);
 
 impl SubscriberName {
     // parse valdates the input string and returns SubscriberName
-    pub fn parse(s: String) -> Result<(SubscriberName), String> {
+    pub fn parse(s: String) -> Result<SubscriberName, String> {
         let is_empty_or_whitespace = s.trim().is_empty();
         let is_too_long = s.graphemes(true).count() > 256;
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
@@ -27,7 +27,7 @@ impl AsRef<str> for SubscriberName {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::SubscriberName;
+    use super::SubscriberName;
     use claims::{assert_err, assert_ok};
 
     #[test]

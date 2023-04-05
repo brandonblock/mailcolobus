@@ -1,9 +1,9 @@
-//! tests/health_check.rs
+use fake::faker::internet::en::SafeEmail;
+use fake::Fake;
 use mailcolobus::configuration::{get_configuration, DatabaseSettings};
 use mailcolobus::startup::run;
 use mailcolobus::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
-use rand::random;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::mem::drop;
 use std::net::TcpListener;
@@ -68,7 +68,7 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
     sqlx::migrate!("./migrations")
         .run(&connection_pool)
         .await
-        .expect("Failec to migrate the database");
+        .expect("Failed to migrate the database");
     connection_pool
 }
 
@@ -97,10 +97,13 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     // Arrange
     let test_app = spawn_app().await;
     let client = reqwest::Client::new();
-    let tuple = random::<(f64, char)>();
 
     // Act
-    let body = format!("name=le%20guin&email=ursula_le_guin{:?}%40gmail.com", tuple);
+    let email: String = SafeEmail().fake();
+    let body = format!(
+        "name=le%20guin&email={}",
+        url_escape::encode_www_form_urlencoded(&email)
+    );
     let respone = client
         .post(&format!("{}/subscriptions", &test_app.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
