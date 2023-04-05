@@ -1,5 +1,3 @@
-use fake::faker::internet::en::SafeEmail;
-use fake::Fake;
 use mailcolobus::configuration::{get_configuration, DatabaseSettings};
 use mailcolobus::startup::run;
 use mailcolobus::telemetry::{get_subscriber, init_subscriber};
@@ -94,16 +92,16 @@ async fn health_check_works() {
 
 #[actix_web::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {
-    // Arrange
+    // arrange
     let test_app = spawn_app().await;
     let client = reqwest::Client::new();
+    // clean up from past runs
+    let _ = sqlx::query!(r#"DELETE FROM subscriptions WHERE email = 'ursula_le_guin@gmail.com'"#)
+        .execute(&test_app.db_pool)
+        .await;
 
-    // Act
-    let email: String = SafeEmail().fake();
-    let body = format!(
-        "name=le%20guin&email={}",
-        url_escape::encode_www_form_urlencoded(&email)
-    );
+    // act
+    let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
     let respone = client
         .post(&format!("{}/subscriptions", &test_app.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -112,7 +110,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
         .await
         .expect("Failed to execute request");
 
-    // Assert
+    // assert
     assert_eq!(200, respone.status().as_u16());
     let saved = sqlx::query!("SELECT email, name FROM subscriptions",)
         .fetch_one(&test_app.db_pool)
