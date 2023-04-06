@@ -21,6 +21,7 @@ async fn main() -> std::io::Result<()> {
 
     // Start listener
     let listener = TcpListener::bind(address)?;
+
     let port = listener.local_addr().unwrap().port();
     tracing::info!("Starting on port {}", port);
     run(listener, connection)?.await
