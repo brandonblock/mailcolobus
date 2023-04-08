@@ -1,4 +1,5 @@
 use mailcolobus::configuration::{get_configuration, DatabaseSettings};
+use mailcolobus::email_client::EmailClient;
 use mailcolobus::startup::run;
 use mailcolobus::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
@@ -37,7 +38,13 @@ async fn spawn_app() -> TestApp {
     configuration.database.database_name = Uuid::new_v4().to_string();
     let connection = configure_database(&configuration.database).await;
 
-    let server = run(listener, connection.clone()).expect("Failed to bind address");
+    let sender_email = configuration
+        .email_client
+        .sender()
+        .expect("invalid sender email address");
+    let email_client = EmailClient::new(configuration.email_client.base_url, sender_email);
+
+    let server = run(listener, connection.clone(), email_client).expect("Failed to bind address");
 
     // dropping the await so the tests will exit
     drop(actix_web::rt::spawn(server));
