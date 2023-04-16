@@ -5,10 +5,6 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     // arrange
     let test_app = spawn_app().await;
     let client = reqwest::Client::new();
-    // clean up from past runs
-    let _ = sqlx::query!(r#"DELETE FROM subscriptions WHERE email = 'ursula_le_guin@gmail.com'"#)
-        .execute(&test_app.db_pool)
-        .await;
 
     // act
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
