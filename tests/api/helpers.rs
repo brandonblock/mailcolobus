@@ -6,11 +6,6 @@ use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::mem::drop;
 use uuid::Uuid;
 
-pub struct TestApp {
-    pub address: String,
-    pub db_pool: PgPool,
-}
-
 static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "info".to_string();
     let subscriber_name = "test".to_string();
@@ -23,6 +18,23 @@ static TRACING: Lazy<()> = Lazy::new(|| {
         init_subscriber(subscriber);
     }
 });
+
+pub struct TestApp {
+    pub address: String,
+    pub db_pool: PgPool,
+}
+
+impl TestApp {
+    pub async fn post_subscriptions(&self, body: String) -> reqwest::Response {
+        reqwest::Client::new()
+            .post(&format!("{}/subscriptions", &self.address))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(body)
+            .send()
+            .await
+            .expect("failed to execute request")
+    }
+}
 
 pub async fn spawn_app() -> TestApp {
     Lazy::force(&TRACING);
