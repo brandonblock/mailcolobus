@@ -32,7 +32,7 @@ impl EmailClientSettings {
     }
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(serde::Deserialize, Clone)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: Secret<String>,
@@ -71,35 +71,6 @@ pub struct ApplicationSettings {
     pub host: String,
 }
 
-pub enum Environment {
-    Local,
-    Production,
-}
-
-impl Environment {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Environment::Local => "local",
-            Environment::Production => "production",
-        }
-    }
-}
-
-impl TryFrom<String> for Environment {
-    type Error = String;
-
-    fn try_from(s: String) -> Result<Self, Self::Error> {
-        match s.to_lowercase().as_str() {
-            "local" => Ok(Self::Local),
-            "production" => Ok(Self::Production),
-            other => Err(format!(
-                "{} is not a supported environment, use either 'local' or 'production.",
-                other
-            )),
-        }
-    }
-}
-
 pub fn get_configuration() -> Result<Settings, ConfigError> {
     let base_path = std::env::current_dir().expect("failed to get the current directory");
     let configuration_directory = base_path.join("configuration");
@@ -127,4 +98,33 @@ pub fn get_configuration() -> Result<Settings, ConfigError> {
         .build()?;
     // read settings into type
     settings.try_deserialize::<Settings>()
+}
+
+pub enum Environment {
+    Local,
+    Production,
+}
+
+impl Environment {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Environment::Local => "local",
+            Environment::Production => "production",
+        }
+    }
+}
+
+impl TryFrom<String> for Environment {
+    type Error = String;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        match s.to_lowercase().as_str() {
+            "local" => Ok(Self::Local),
+            "production" => Ok(Self::Production),
+            other => Err(format!(
+                "{} is not a supported environment, use either 'local' or 'production.",
+                other
+            )),
+        }
+    }
 }
