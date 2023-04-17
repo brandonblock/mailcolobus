@@ -33,6 +33,7 @@ async fn subscribe_sends_a_confirmation_email_with_a_link() {
     let text_link = get_link(body["TextBody"].as_str().unwrap());
     assert_eq!(html_link, text_link);
 }
+
 #[actix_web::test]
 async fn subscribe_persists_the_new_subscriber() {
     // arrange
@@ -43,13 +44,14 @@ async fn subscribe_persists_the_new_subscriber() {
     test_app.post_subscriptions(body.into()).await;
 
     // assert
-    let saved = sqlx::query!("SELECT email, name FROM subscriptions",)
+    let saved = sqlx::query!("SELECT email, name, status FROM subscriptions",)
         .fetch_one(&test_app.db_pool)
         .await
         .expect("failed to fetch saved subscription.");
 
     assert_eq!(saved.email, "ursula_le_guin@gmail.com");
     assert_eq!(saved.name, "le guin");
+    assert_eq!(saved.status, "pending_confirmation");
 }
 
 #[actix_web::test]
