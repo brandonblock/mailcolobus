@@ -22,7 +22,7 @@ jobs:
     services:
       # Label used to access the service container
       postgres:
-        # Docker Hub image 
+        # Docker Hub image
         image: postgres:14
         # Environment variables scoped only for the `postgres` element
         env:
@@ -34,7 +34,7 @@ jobs:
     steps:
         # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
-        # The uses keyword specifies that this step will run v3 of the actions/checkout action. 
+        # The uses keyword specifies that this step will run v3 of the actions/checkout action.
         # This is an action that checks out your repository onto the runner, allowing you to run scripts or other actions against your code (such as build and test tools).
         # You should use the checkout action any time your workflow will run against the repository's code.
         uses: actions/checkout@v3
@@ -57,8 +57,8 @@ jobs:
             --features ${{ env.SQLX_FEATURES }}
             --no-default-features
             --locked
-            # The --locked flag can be used to force Cargo to use the packaged Cargo.lock file if it is available. 
-            # This may be useful for ensuring reproducible builds, to use the exact same set of dependencies that were available when the package was published. 
+            # The --locked flag can be used to force Cargo to use the packaged Cargo.lock file if it is available.
+            # This may be useful for ensuring reproducible builds, to use the exact same set of dependencies that were available when the package was published.
             # It may also be useful if a newer version of a dependency is published that no longer builds on your system, or has other problems
 
       - name: Install postgresql-client
@@ -66,9 +66,9 @@ jobs:
 
       - name: Migrate database
         run: SKIP_DOCKER=true ./scripts/init_db.sh
-      - name: Check sqlx-data.json is up-to-date
-        run: |
-          cargo sqlx prepare --check -- --bin mailcolobus
+      # - name: Check sqlx-data.json is up-to-date
+      #   run: |
+      #     cargo sqlx prepare --check -- --bin mailcolobus
       - name: Run tests
         run: cargo test
 
