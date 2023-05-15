@@ -5,3 +5,4 @@ Email newsletter service based on the project from [Zero To Production With Rust
 - [x] send emails via Postmark REST API
 - [ ] support custom email content
 - [ ] support deployment to Digital Ocean Droplet
+- [ ] document running locally and deployment
